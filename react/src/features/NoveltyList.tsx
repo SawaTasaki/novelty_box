@@ -33,9 +33,7 @@ export const NoveltyList = () => {
 
   if (scanOpen) {
   return (
-    <QrScan
-      onBack={() => setScanOpen(false)}
-    />
+    <QrScan />
   );
 }
 
