@@ -1,75 +1,107 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Html5Qrcode } from "html5-qrcode";
-import { Button } from "../components/ui/Button";
 
 type Props = {
-  onBack: () => void;
+  onResult: (text: string) => void;
 };
 
-export const QrScan = ({ onBack }: Props) => {
+export const QrScan = ({ onResult }: Props) => {
+  const [log, setLog] = useState("init");
+  const [cameras, setCameras] = useState<any[]>([]);
+  const [selectedCamera, setSelectedCamera] = useState<string | null>(null);
+
   useEffect(() => {
-    console.log("QR START");
-    Html5Qrcode.getCameras()
-    .then((devices) => {
-      console.log("CAMERAS", devices);
-    })
-    .catch(console.error);
-    const qrCodeScanner =
-  new Html5Qrcode(
-    "reader",
-    {
-      verbose: true,
-    }
-  );
+    const qr = new Html5Qrcode("reader");
+
+    setLog("getting cameras...");
 
     Html5Qrcode.getCameras()
-  .then((devices) => {
-    console.log("CAMERAS", devices);
+      .then((devices) => {
+        setCameras(devices);
+        setLog("devices found: " + devices.length);
 
-    if (devices.length === 0) {
-      console.error("カメラなし");
-      return;
-    }
+        if (!devices.length) {
+          setLog("no cameras found");
+          return;
+        }
 
-    return qrCodeScanner.start(
-      devices[0].id,
-      {
-        fps: 10,
-      },
-      (decodedText) => {
-        console.log("QR", decodedText);
-      },
-      () => {}
-    );
-  })
-  .then(() => {
-    console.log("SCAN STARTED");
-  })
-  .catch((err) => {
-    console.error("START ERROR", err);
-  });
+        // 👉 背面カメラ優先
+        const backCamera =
+          devices.find((d) =>
+            d.label.toLowerCase().includes("back") ||
+            d.label.toLowerCase().includes("environment")
+          ) || devices[0];
 
-   return () => {
-  try {
-    qrCodeScanner.clear();
-  } catch {}
-};
+        setSelectedCamera(backCamera.id);
+
+        setLog("selected camera: " + backCamera.label);
+
+        startCamera(backCamera.id, qr);
+      })
+      .catch((err) => {
+        setLog("camera error: " + err.message);
+      });
+
+    const startCamera = (cameraId: string, qr: Html5Qrcode) => {
+      setLog("starting camera...");
+
+      qr.start(
+        cameraId,
+        {
+          fps: 10,
+          qrbox: 250,
+        },
+        (decodedText) => {
+          setLog("QR detected: " + decodedText);
+
+          onResult(decodedText);
+
+          qr.stop().then(() => {
+            setLog("stopped");
+          });
+        },
+        () => {}
+      ).catch((err) => {
+        setLog("start error: " + err.message);
+      });
+    };
+
+    return () => {
+      qr.stop().catch(() => {});
+    };
   }, []);
 
   return (
-    <div className="p-4">
-      <div className="mb-4 text-lg font-semibold">
-        QR読取
+    <div>
+      {/* ログ */}
+      <div style={{ marginBottom: 10 }}>
+        LOG: {log}
       </div>
 
-      <div
-  id="reader"
-  className="border mb-4 h-96 overflow-hidden"
-/>
+      {/* カメラ選択UI */}
+      {cameras.length > 1 && (
+        <div style={{ marginBottom: 10 }}>
+          <div>camera select:</div>
+          {cameras.map((cam) => (
+            <button
+              key={cam.id}
+              onClick={() => setSelectedCamera(cam.id)}
+              style={{
+                marginRight: 5,
+                background:
+                  cam.id === selectedCamera ? "#ddd" : "#fff",
+              }}
+            >
+              {cam.label || cam.id}
+            </button>
+          ))}
+        </div>
+      )}
 
-      <Button
-        text="戻る"
-        onClick={onBack}
+      {/* QR表示エリア */}
+      <div
+        id="reader"
+        style={{ width: "100%", minHeight: 300 }}
       />
     </div>
   );
