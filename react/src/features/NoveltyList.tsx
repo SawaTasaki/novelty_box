@@ -1,9 +1,10 @@
 import { useState } from "react";
-import { novelties } from "../data/novelties";
+import { novelties, type Novelty } from "../data/novelties";
 import { NoveltyCard } from "../components/ui/NoveltyCard";
 import { Button } from "../components/ui/Button";
 import { NoveltyFilter } from "./NoveltyFilter";
 import { QrScan } from "./QrScan";
+import { NoveltyDetail } from "./NoveltyDetail";
 
 type Filter = {
   keyword: string;
@@ -14,6 +15,8 @@ export const NoveltyList = () => {
   const [filterOpen, setFilterOpen] = useState(false);
   const [scanOpen, setScanOpen] =
   useState(false);
+  const [selectedNovelty, setSelectedNovelty] =
+  useState<Novelty | null>(null);
 
   const [filter, setFilter] = useState<Filter>({
     keyword: "",
@@ -24,8 +27,33 @@ export const NoveltyList = () => {
   filter.keyword !== "" ||
   filter.eventName !== "";
 
-  // フィルタ適用ロジック
-  const filtered = novelties.filter((n) => {
+const KEY = "savedNoveltyIds";
+
+const getSavedNoveltyIds = (): string[] => {
+  const raw = localStorage.getItem(KEY);
+
+  if (!raw) {
+    const initialIds = ["1", "3", "7"];
+
+    localStorage.setItem(
+      KEY,
+      JSON.stringify(initialIds)
+    );
+
+    return initialIds;
+  }
+
+  return JSON.parse(raw);
+};
+
+const savedIds = getSavedNoveltyIds();
+
+const savedNovelties = novelties.filter((n) =>
+  savedIds.includes(n.id)
+);
+
+ // フィルタ適用ロジック
+  const filtered = savedNovelties.filter((n) => {
     const matchKeyword =
       filter.keyword === "" || n.companyName.includes(filter.keyword);
 
@@ -38,6 +66,16 @@ export const NoveltyList = () => {
   if (scanOpen) {
   return (
     <QrScan />
+  );
+}
+
+if (selectedNovelty) {
+  return (
+    <NoveltyDetail
+      companyName={selectedNovelty.companyName}
+      eventName={selectedNovelty.eventName}
+      pdfUrl={selectedNovelty.pdfUrl}
+    />
   );
 }
 
@@ -82,8 +120,14 @@ export const NoveltyList = () => {
       {/* 一覧 */}
       <div className="grid grid-cols-2 gap-3">
         {filtered.map((item) => (
-          <NoveltyCard key={item.id} novelty={item} />
-        ))}
+  <div
+    key={item.id}
+    onClick={() => setSelectedNovelty(item)}
+    className="cursor-pointer"
+  >
+    <NoveltyCard novelty={item} />
+  </div>
+))}
       </div>
 
       {/* QR読取ボタン */}

@@ -26,7 +26,32 @@ export const QrScan = () => {
           },
           (decodedText) => {
             setLog("QR: " + decodedText);
+            const KEY = "savedNoveltyIds";
+const getSavedNoveltyIds = (): string[] => {
+  const raw = localStorage.getItem(KEY);
+
+  if (!raw) {
+    return [];
+  }
+
+  return JSON.parse(raw);
+};
+
+const saveNoveltyId = (id: string) => {
+  const ids = getSavedNoveltyIds();
+
+  if (ids.includes(id)) {
+    return;
+  }
+
+  localStorage.setItem(
+    KEY,
+    JSON.stringify([...ids, id])
+  );
+};
+saveNoveltyId(decodedText);
             qr.stop().catch(() => {});
+            window.location.reload();
           },
           (_) => {
            //
