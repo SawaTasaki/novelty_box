@@ -9,19 +9,28 @@ export const QrScan = () => {
 
     Html5Qrcode.getCameras()
       .then((devices) => {
-        const cameraId = devices?.[0]?.id;
-        if (!cameraId) return;
+        setLog("devices: " + devices.length);
+
+        const cameraId =
+          devices.find((d) =>
+            /back|rear|environment|wide/i.test(d.label)
+          )?.id || devices[devices.length - 1]?.id || devices[0]?.id;
+
+        setLog("selected camera: " + cameraId);
 
         qr.start(
           cameraId,
-          { fps: 10, qrbox: 250 },
+          {
+            fps: 10,
+            qrbox: 250,
+          },
           (decodedText) => {
-            // 👉 QRの中身をそのまま表示
-            setLog(decodedText);
-
+            setLog("QR: " + decodedText);
             qr.stop().catch(() => {});
           },
-          () => {}
+          (err) => {
+            // scan errorは無視でOK
+          }
         );
       })
       .catch((err) => {
@@ -35,10 +44,7 @@ export const QrScan = () => {
 
   return (
     <div>
-      <div>QR RESULT:</div>
-      <div style={{ fontSize: 18, fontWeight: "bold" }}>
-        {log}
-      </div>
+      <div>LOG: {log}</div>
 
       <div id="reader" style={{ width: "100%", minHeight: 300 }} />
     </div>
