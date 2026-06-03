@@ -20,6 +20,10 @@ export const NoveltyList = () => {
     eventName: "",
   });
 
+  const hasFilter =
+  filter.keyword !== "" ||
+  filter.eventName !== "";
+
   // フィルタ適用ロジック
   const filtered = novelties.filter((n) => {
     const matchKeyword =
@@ -47,15 +51,17 @@ export const NoveltyList = () => {
 
         <div className="flex gap-2">
           {/* 解除ボタン */}
-          <Button
-            text="解除"
-            onClick={() =>
-              setFilter({
-                keyword: "",
-                eventName: "",
-              })
-            }
-          />
+          {hasFilter && (
+  <Button
+    text="解除"
+    onClick={() =>
+      setFilter({
+        keyword: "",
+        eventName: "",
+      })
+    }
+  />
+)}
 
           {/* フィルタボタン */}
           <Button text="フィルタ" onClick={() => setFilterOpen(!filterOpen)} />

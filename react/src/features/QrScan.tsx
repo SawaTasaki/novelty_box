@@ -28,8 +28,8 @@ export const QrScan = () => {
             setLog("QR: " + decodedText);
             qr.stop().catch(() => {});
           },
-          (err) => {
-            // scan errorは無視でOK
+          (_) => {
+           //
           }
         );
       })
