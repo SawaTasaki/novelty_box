@@ -7,7 +7,11 @@ type Props = {
 export const NoveltyCard = ({ novelty }: Props) => {
   return (
     <div className="aspect-square overflow-hidden rounded-lg border bg-white">
-      <div className="h-3/4 bg-gray-200" />
+      <img
+        src={novelty.thumbnailUrl}
+        alt=""
+        className="h-3/4 w-full object-cover bg-gray-200"
+      />
 
       <div className="h-1/4 p-2">
         <div className="text-sm font-medium truncate">

@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Html5Qrcode } from "html5-qrcode";
+import { saveNoveltyId } from "../utils/localStorage";
 
 export const QrScan = () => {
   const [log, setLog] = useState("init");
@@ -12,9 +13,10 @@ export const QrScan = () => {
         setLog("devices: " + devices.length);
 
         const cameraId =
-          devices.find((d) =>
-            /back|rear|environment|wide/i.test(d.label)
-          )?.id || devices[devices.length - 1]?.id || devices[0]?.id;
+          devices.find((d) => /back|rear|environment|wide/i.test(d.label))
+            ?.id ||
+          devices[devices.length - 1]?.id ||
+          devices[0]?.id;
 
         setLog("selected camera: " + cameraId);
 
@@ -26,36 +28,15 @@ export const QrScan = () => {
           },
           (decodedText) => {
             setLog("QR: " + decodedText);
-            const KEY = "savedNoveltyIds";
-const getSavedNoveltyIds = (): string[] => {
-  const raw = localStorage.getItem(KEY);
 
-  if (!raw) {
-    return [];
-  }
+            saveNoveltyId(decodedText);
 
-  return JSON.parse(raw);
-};
-
-const saveNoveltyId = (id: string) => {
-  const ids = getSavedNoveltyIds();
-
-  if (ids.includes(id)) {
-    return;
-  }
-
-  localStorage.setItem(
-    KEY,
-    JSON.stringify([...ids, id])
-  );
-};
-saveNoveltyId(decodedText);
             qr.stop().catch(() => {});
             window.location.reload();
           },
           (_) => {
-           //
-          }
+            //
+          },
         );
       })
       .catch((err) => {

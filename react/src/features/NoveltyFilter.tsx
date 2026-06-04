@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { novelties } from "../data/novelties";
+import type { Novelty } from "../data/novelties";
 import { Input } from "../components/ui/Input";
 import { Select } from "../components/ui/Select";
 import { Button } from "../components/ui/Button";
@@ -7,15 +7,16 @@ import { Button } from "../components/ui/Button";
 type Props = {
   onClose: () => void;
   onApply: (filter: { keyword: string; eventName: string }) => void;
+  savedNovelties: Novelty[];
 };
 
-export const NoveltyFilter = ({ onClose, onApply }: Props) => {
+export const NoveltyFilter = ({ onClose, onApply, savedNovelties }: Props) => {
   const [keyword, setKeyword] = useState("");
   const [eventName, setEventName] = useState("");
 
   // event一覧をdataから生成（重複排除）
   const eventOptions = Array.from(
-    new Set(novelties.map((n) => n.eventName)),
+    new Set(savedNovelties.map((n) => n.eventName)),
   ).map((event) => ({
     label: event,
     value: event,
