@@ -5,6 +5,7 @@ import { Button } from "../components/ui/Button";
 import { NoveltyFilter } from "./NoveltyFilter";
 import { QrScan } from "./QrScan";
 import { NoveltyDetail } from "./NoveltyDetail";
+import { UsageGuide } from "./UsageGuide";
 import {
   getSavedNoveltyIds,
   resetSavedNoveltyIds,
@@ -111,6 +112,9 @@ export const NoveltyList = () => {
           ))}
         </div>
       )}
+
+      {/* サービス使い方ガイド */}
+<UsageGuide />
 
       {/* 開発用 */}
       <div className="mt-6">
